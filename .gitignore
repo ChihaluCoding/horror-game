@@ -1,1 +1,49 @@
 /.github
+
+# Unity generated/temporary
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild*/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# Unity cache
+[Aa]sset[Ss]tore/
+[Aa]sset[Ss]tore-[Oo]ld/
+[Pp]ackages/manifest.temp.json
+
+# Rider / VS / VSCode
+.idea/
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.user
+*.unityproj
+*.pidb
+*.svd
+*.userprefs
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Crash/Profiler
+*.stacktrace
+*.crash
+*.trace
+*.dmp
+
+# Local builds / archives
+*.apk
+*.aab
+*.ipa
+*.app
+*.exe
+*.dll
+*.zip
+*.tar.gz
