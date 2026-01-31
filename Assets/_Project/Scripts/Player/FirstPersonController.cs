@@ -14,7 +14,16 @@ namespace Project.Player
         [SerializeField] private float crouchMultiplier = 0.5f;
         [SerializeField] private float jumpHeight = 1.2f;
         [SerializeField] private float gravity = -9.81f;
+        [SerializeField] private float riseGravityMultiplier = 1.1f;
+        [SerializeField] private float fallGravityMultiplier = 1.6f;
         [SerializeField] private float crouchHeight = 1.0f;
+
+        [Header("Stamina")]
+        [SerializeField] private float maxStamina = 5f;
+        [SerializeField] private float staminaDrainRate = 1.2f;
+        [SerializeField] private float staminaRegenRate = 1.5f;
+        [SerializeField] private float staminaRegenDelay = 0.5f;
+        [SerializeField] private float minStaminaToSprint = 0.1f;
 
         [Header("Look")]
         [SerializeField] private float mouseSensitivity = 2f;
@@ -27,6 +36,11 @@ namespace Project.Player
         private float standHeight;
         private Vector3 standCenter;
         private Vector3 crouchCenter;
+        private float currentStamina;
+        private float staminaRegenCooldown;
+
+        public float CurrentStamina => currentStamina;
+        public float StaminaNormalized => maxStamina > 0f ? currentStamina / maxStamina : 0f;
 
         private void Awake()
         {
@@ -45,6 +59,10 @@ namespace Project.Player
             {
                 cameraPivot = Camera.main.transform;
             }
+
+            maxStamina = Mathf.Max(0.1f, maxStamina);
+            currentStamina = maxStamina;
+            staminaRegenCooldown = 0f;
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -89,9 +107,25 @@ namespace Project.Player
             {
                 speed *= crouchMultiplier;
             }
-            else if (Input.GetKey(KeyCode.LeftShift))
+            bool hasMoveInput = input.sqrMagnitude > 0.01f;
+            bool wantsSprint = Input.GetKey(KeyCode.LeftShift) && hasMoveInput;
+            bool canSprint = currentStamina > minStaminaToSprint;
+            if (!wantsCrouch && wantsSprint && canSprint)
             {
                 speed *= sprintMultiplier;
+                currentStamina = Mathf.Max(0f, currentStamina - staminaDrainRate * Time.deltaTime);
+                staminaRegenCooldown = staminaRegenDelay;
+            }
+            else
+            {
+                if (staminaRegenCooldown > 0f)
+                {
+                    staminaRegenCooldown -= Time.deltaTime;
+                }
+                else
+                {
+                    currentStamina = Mathf.Min(maxStamina, currentStamina + staminaRegenRate * Time.deltaTime);
+                }
             }
 
             Vector3 move = transform.TransformDirection(input) * speed;
@@ -106,7 +140,8 @@ namespace Project.Player
                 verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
 
-            verticalVelocity += gravity * Time.deltaTime;
+            float gravityScale = verticalVelocity < 0f ? fallGravityMultiplier : riseGravityMultiplier;
+            verticalVelocity += gravity * gravityScale * Time.deltaTime;
             move.y = verticalVelocity;
 
             controller.Move(move * Time.deltaTime);
